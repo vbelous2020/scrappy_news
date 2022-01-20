@@ -1,0 +1,16 @@
+export default class AddDataSourceResponseModel {
+    success: boolean | undefined | null;
+    error: string | undefined | null;
+} -> TS Type Definition
+
+RAW JSON Example:
+
+{
+	success: true,
+	error: null
+}
+
+{
+	success: false,
+	error: 'Неможливо обробити шаблон'
+}
