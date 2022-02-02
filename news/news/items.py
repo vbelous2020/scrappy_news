@@ -3,13 +3,14 @@
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/items.html
 
-import scrapy
 from scrapy.item import Item, Field
 
 
-class NewsItem(scrapy.Item):
+class NewsItem(Item):
+    url = Field()
     title = Field()
-    short = Field()
     date = Field()
     author = Field()
+    author_link = Field()
+    short = Field()
     main_text = Field()

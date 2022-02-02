@@ -1,30 +1,37 @@
 import scrapy
-from scrapy.spiders import Rule
-from scrapy.linkextractors import LinkExtractor
-from news.items import NewsItem
+import news_api.db as db
+from news import items
+
 
 class UnianSpider(scrapy.Spider):
     name = 'unian'
 
     def start_requests(self):
         urls = [
-            'https://health.unian.net/health/koronavirus-nabiraet-oboroty-za-sutki-zarazilis-pochti-13-tysyach-ukraincev-11675953.html',
-            'https://health.unian.net/health/vse-ochen-prosto-doktor-komarovskiy-otvetil-na-populyarnyy-vopros-o-privivkah-11675938.html',
-            'https://health.unian.net/health/kak-pravilno-kupatsya-na-kreshchenie-2022-v-minzdrave-dali-sovety-11675716.html'
+            'https://www.pravda.com.ua/news/2022/02/1/7322400/',
+            'https://www.unian.ua/politics/dbr-provodit-obshuki-u-kolishnogo-golovi-naftogazu-kobolyeva-dbr-novini-ukrajina-11689753.html',
+            'https://www.ukrinform.ua/rubric-polytics/3393674-kremlivskij-milnij-serial-novi-suzeti-z-neasnim-finalom.html',
+            'https://lenta.ua/polyarnaya-noch-ili-kratkovremennoe-zatmenie-zachem-zelenskiy-rugaetsya-s-baydenom-115114/'
             ]
         for url in urls:
             yield scrapy.Request(url=url, callback=self.parse)
 
     def parse(self, response, **kwargs):
-        item = NewsItem()
-        title = response.css('div.article:nth-child(1) > h1:nth-child(2)').getall()
-        date = response.css('div.article__info-item.time:nth-child(2)').get()
-        short = response.css('p.article__like-h2:nth-child(4)').get()
-        text = response.css('div.article-text > p').getall()
-        author = response.css('a.article__author-name').get()
+        item = items.NewsItem()
+        url = response.request.url
+        print(f"Url: {response.request.url}")
+        pattern = db.check_pattern(url)
+        title = response.css(pattern['title_path'] + " *::text").getall()
+        date = response.css(pattern['date_path'] + " *::text").get()
+        author = response.css(pattern['author_path'] + " *::text").get()
+        author_link = response.css(pattern['author_path'] + " *::attr(href)").get()
+        short = response.css(pattern['short_path'] + " *::text").get()
+        main_text = response.css(pattern['main_text_path'] + " *::text").getall()
+        item['url'] = url
         item['title'] = title
-        item['short'] = short
         item['date'] = date
         item['author'] = author
-        item['main_text'] = text
+        item['author_link'] = author_link
+        item['short'] = short
+        item['main_text'] = main_text
         yield item
