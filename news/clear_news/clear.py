@@ -2,7 +2,6 @@ import logging
 import pymongo
 import psycopg
 from psycopg import Error
-import pytz
 from config_clear import MONGODB_DB, MONGODB_COLLECTION, con
 
 mng_cl = pymongo.MongoClient('127.0.0.1')
@@ -19,7 +18,7 @@ logging.basicConfig(filename='log/clear_work_log.log',
 def read_from_mongo():
     data = list()
     try:
-        source = source_collection.find()
+        source = source_collection.find({'cleared': False})
         for item in source:
             d = dict()
             d['url'] = item['url']
@@ -28,10 +27,10 @@ def read_from_mongo():
             d['author'] = item['author']
             d['author_link'] = item['author_link']
             d['short'] = item['short']
+            d['timestamp'] = item['timestamp']
             main_text = str()
             for i in item['main_text']:
                 main_text += i + ' '
-            print(main_text)
             d['main_text'] = item['main_text']
             data.append(d)
     except Exception as e:
@@ -61,31 +60,44 @@ def url_check(url):
     return flag
 
 
+def flag_to_mongo(url):
+    source_collection.update_one({'url': url},
+                                 {'$set': {'cleared': True}}, upsert=False)
+    logging_info = f'Url: {url} has been updated!'
+    logging.info(logging_info)
+
+
 def write_to_postgres(data):
-    for d in data:
-        if url_check(d['url']):
-            continue
-        else:
-            try:
-                logging_info = f"Saving data from url: {d['url']}"
+    if data:
+        for d in data:
+            if url_check(d['url']):
+                print()
+                logging_info = f"Url({d['url']}) exists in db. Nothing to add."
                 logging.info(logging_info)
-                with psycopg.connect(con) as conn:
-                    with conn.cursor() as cur:
-                        new_pattern = """
-                        INSERT INTO clear_data (url, title, date, author, author_link, short, main_text) 
-                        VALUES (%s, %s, %s, %s, %s, %s, %s)"""
-                        cur.execute(new_pattern, (d['url'], d['title'], d['date'], d['author'], d['author_link'],
-                                                  d['short'], d['main_text']))
-                        conn.commit()
-                logging_info = "Data saved successfully!"
-                logging.info(logging_info)
-            except (Exception, Error) as e:
-                logging_info = f"Error: {e}"
-                logging.info(logging_info)
-            finally:
-                if conn:
-                    cur.close()
-                    conn.close()
+                continue
+            else:
+                try:
+                    logging_info = f"Saving data from url: {d['url']}"
+                    logging.info(logging_info)
+                    with psycopg.connect(con) as conn:
+                        with conn.cursor() as cur:
+                            new_pattern = """
+                            INSERT INTO clear_data (url, title, date_publ, date, author, author_link, short, main_text) 
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"""
+                            cur.execute(new_pattern, (d['url'], d['title'], d['date'], d['timestamp'], d['author'],
+                                                      d['author_link'], d['short'], d['main_text']))
+                            conn.commit()
+                    flag_to_mongo(d['url'])
+                except (Exception, Error) as e:
+                    logging_info = f"Error: {e}"
+                    logging.info(logging_info)
+                finally:
+                    if conn:
+                        cur.close()
+                        conn.close()
+    else:
+        logging_info = f"No news - good news!"
+        logging.info(logging_info)
 
 
 def create_clear_data_table():
@@ -106,7 +118,8 @@ def create_clear_data_table():
                                 )
                             """)
                 conn.commit()
-                """ SET timezone = 'Europe/Kiev' """
+                cur.execute(""" SET timezone = 'Europe/Kiev' """)
+                conn.commit()
                 print("DONE")
     except (Exception, Error) as e:
         logging_info = f"Error: {e}"

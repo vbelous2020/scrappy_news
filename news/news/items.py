@@ -10,8 +10,10 @@ class NewsItem(Item):
     url = Field()
     title = Field()
     date = Field()
+    timestamp = Field()
     author = Field()
     author_link = Field()
     short = Field()
     main_text = Field()
+    cleared = Field()
 
