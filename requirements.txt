@@ -25,4 +25,5 @@ wheel==0.36.2
 psycopg-binary==3.0.8
 psycopg==3.0.8
 pytz==2021.3
-itemadapter~=0.4.0
+itemadapter==0.4.0
+newspaper3k==0.2.8
