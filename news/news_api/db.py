@@ -142,30 +142,6 @@ def create_pattern_table():
             conn.close()
 
 
-def create_clear_data_table():
-    try:
-        with psycopg.connect(con) as conn:
-            with conn.cursor() as cur:
-                cur.execute("""
-                            CREATE TABLE clear_data (
-                                id serial PRIMARY KEY,
-                                url TEXT, 
-                                title TEXT,
-                                date TEXT,
-                                author TEXT,
-                                short TEXT,
-                                main_text TEXT
-                                )
-                            """)
-                conn.commit()
-    except (Exception, Error) as error:
-        print(error)
-    finally:
-        if conn:
-            cur.close()
-            conn.close()
-
-
 def delete_index(url):
     try:
         with psycopg.connect(con) as conn:

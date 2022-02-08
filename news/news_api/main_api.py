@@ -1,3 +1,4 @@
+import uvicorn
 from fastapi import FastAPI
 from fastapi import Request
 from fastapi.responses import JSONResponse
@@ -52,3 +53,5 @@ async def unique(request: Request):
 # Ожидаю, получить JSON в котором три поля - success (boolean, получилось приконектиться и
 # получить данные из бд), error (строка или null) и unique(boolean, уникальный ли url)
 
+if __name__ == "__main__":
+    uvicorn.run("main_api:app", host="127.0.0.1", port=8000, log_level="info")

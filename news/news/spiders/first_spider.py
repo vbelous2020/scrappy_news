@@ -22,14 +22,15 @@ class UnianSpider(scrapy.Spider):
         print(f"Url: {response.request.url}")
         pattern = db.check_pattern(url)
         title = response.css(pattern['title_path'] + " *::text").getall()
-        date = response.css(pattern['date_path'] + " *::text").get()
+        news_date = response.css(pattern['date_path'] + " *::text").get()
         author = response.css(pattern['author_path'] + " *::text").get()
         author_link = response.css(pattern['author_path'] + " *::attr(href)").get()
         short = response.css(pattern['short_path'] + " *::text").get()
         main_text = response.css(pattern['main_text_path'] + " *::text").getall()
+
         item['url'] = url
         item['title'] = title
-        item['date'] = date
+        item['date'] = news_date
         item['author'] = author
         item['author_link'] = author_link
         item['short'] = short

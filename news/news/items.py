@@ -14,3 +14,4 @@ class NewsItem(Item):
     author_link = Field()
     short = Field()
     main_text = Field()
+
