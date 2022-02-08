@@ -15,6 +15,36 @@ logging.basicConfig(filename='log/clear_work_log.log',
                     level=logging.INFO)
 
 
+def create_clear_data_table():
+    try:
+        with psycopg.connect(con) as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                            CREATE TABLE clear_data (
+                                id serial PRIMARY KEY,
+                                url TEXT, 
+                                title TEXT,
+                                date TIMESTAMPTZ,
+                                date_publ TEXT,
+                                author TEXT,
+                                author_link TEXT,
+                                short TEXT,
+                                main_text TEXT
+                                )
+                            """)
+                conn.commit()
+                cur.execute(""" SET timezone = 'Europe/Kiev' """)
+                conn.commit()
+                print("DONE")
+    except (Exception, Error) as e:
+        logging_info = f"Error: {e}"
+        logging.info(logging_info)
+    finally:
+        if conn:
+            cur.close()
+            conn.close()
+
+
 def read_from_mongo():
     data = list()
     try:
@@ -100,31 +130,27 @@ def write_to_postgres(data):
         logging.info(logging_info)
 
 
-def create_clear_data_table():
+def read_clear():
+    d = dict()
     try:
         with psycopg.connect(con) as conn:
             with conn.cursor() as cur:
-                cur.execute("""
-                            CREATE TABLE clear_data (
-                                id serial PRIMARY KEY,
-                                url TEXT, 
-                                title TEXT,
-                                date TIMESTAMPTZ,
-                                date_publ TEXT,
-                                author TEXT,
-                                author_link TEXT,
-                                short TEXT,
-                                main_text TEXT
-                                )
-                            """)
+                search_pattern = f"""
+                    SELECT (title_path, date_path, author_path, short_path, main_text_path) 
+                    FROM pattern """
+                cur.execute(search_pattern)
                 conn.commit()
-                cur.execute(""" SET timezone = 'Europe/Kiev' """)
-                conn.commit()
-                print("DONE")
-    except (Exception, Error) as e:
-        logging_info = f"Error: {e}"
-        logging.info(logging_info)
+                result = cur.fetchone()
+                if result:
+                    d['title_path'] = result[0][0]
+                    d['date_path'] = result[0][1]
+                    d['author_path'] = result[0][2]
+                    d['short_path'] = result[0][3]
+                    d['main_text_path'] = result[0][4]
+    except (Exception, Error) as error:
+        print(error)
     finally:
         if conn:
             cur.close()
             conn.close()
+    return d

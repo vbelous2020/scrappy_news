@@ -8,6 +8,37 @@ db_password = "firmamento10"
 con = f"dbname={db_name} user={db_user} password={db_password}"
 
 
+def create_pattern_table():
+    try:
+        with psycopg.connect(con) as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                            CREATE TABLE pattern (
+                                id serial PRIMARY KEY,
+                                name TEXT,
+                                url TEXT, 
+                                title_path TEXT,
+                                title_hash TEXT,
+                                date_path TEXT,
+                                date_hash TEXT,
+                                author_path TEXT,
+                                author_hash TEXT,
+                                short_path TEXT,
+                                short_hash TEXT,
+                                main_text_path TEXT,
+                                main_text_hash TEXT,
+                                username TEXT
+                                )
+                            """)
+                conn.commit()
+    except (Exception, Error) as error:
+        print(error)
+    finally:
+        if conn:
+            cur.close()
+            conn.close()
+
+
 def add_pattern(name, user, url, title_path, title_hash, date_path, date_hash, author_path,
                 author_hash, short_path, short_hash, main_text_path, main_text_hash):
     try:
@@ -111,38 +142,7 @@ def check_pattern(current_url):
     return pattern
 
 
-def create_pattern_table():
-    try:
-        with psycopg.connect(con) as conn:
-            with conn.cursor() as cur:
-                cur.execute("""
-                            CREATE TABLE pattern (
-                                id serial PRIMARY KEY,
-                                name TEXT,
-                                url TEXT, 
-                                title_path TEXT,
-                                title_hash TEXT,
-                                date_path TEXT,
-                                date_hash TEXT,
-                                author_path TEXT,
-                                author_hash TEXT,
-                                short_path TEXT,
-                                short_hash TEXT,
-                                main_text_path TEXT,
-                                main_text_hash TEXT,
-                                username TEXT
-                                )
-                            """)
-                conn.commit()
-    except (Exception, Error) as error:
-        print(error)
-    finally:
-        if conn:
-            cur.close()
-            conn.close()
-
-
-def delete_index(url):
+def delete_pattern(url):
     try:
         with psycopg.connect(con) as conn:
             with conn.cursor() as cur:
