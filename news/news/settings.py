@@ -1,3 +1,8 @@
+import configparser
+
+config = configparser.ConfigParser()
+config.read('../config.ini')
+
 # Scrapy settings for news project
 #
 # For simplicity, this file contains only settings considered important or
@@ -69,10 +74,10 @@ ITEM_PIPELINES = {
     'news.pipelines.MongoDBPipeline': 300,
 }
 
-MONGODB_SERVER = "localhost"
-MONGODB_PORT = 27017
-MONGODB_DB = "observer"
-MONGODB_COLLECTION = "news_data"
+MONGODB_SERVER = config["mongo"]["db_server"]
+MONGODB_PORT = config["mongo"]["db_port"]
+MONGODB_DB = config["mongo"]["db_name"]
+MONGODB_COLLECTION = config["mongo"]["pattern_collection"]
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html

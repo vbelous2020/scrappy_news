@@ -2,7 +2,7 @@ from datetime import datetime
 import pytz
 import scrapy
 import news_api.db as db
-from news import items
+from .. import items
 
 
 class UnianSpider(scrapy.Spider):

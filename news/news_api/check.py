@@ -1,24 +1,21 @@
 import newspaper
 from pymongo import MongoClient
-# from config import MONGODB_DB, MONGODB_SERVER, MONGODB_COLLECTION
 import logging
 import db as func_db
+import configparser
 
-db_server = '127.0.0.1'
-db = "observer"
-db_urls = "news_data"
+config = configparser.ConfigParser()
+config.read('../config.ini')
 
+client = MongoClient(config["mongo"]["db_server"], config["mongo"]["db_port"])
+db = client[config["mongo"]["db_name"]]
+posts = db[config["mongo"]["urls_collection"]]
 
-logging.basicConfig(filename='new_articles.log',
+logging.basicConfig(filename='../log/new_articles.log',
                     filemode='a',
                     format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
                     datefmt='%H:%M:%S',
                     level=logging.INFO)
-
-client = MongoClient(db_server, 27017)
-db = client[db]
-posts = db[db_urls]
-
 
 list_of_sites = func_db.url_list()
 
@@ -38,7 +35,7 @@ def get_new_articles(list):
         if rss_exist(site) is False:
             pass
         else:
-            actual_site = newspaper.build('https://' + site, memoize_articles=True)
+            actual_site = newspaper.build('https://' + site, memoize_articles=False)     # True
             if actual_site.size() < 1:
                 logging_info = f"No new articles - good news!"
                 logging.info(logging_info)

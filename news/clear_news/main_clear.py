@@ -14,5 +14,5 @@ def transfer_to_clear():
 
 
 if __name__ == "__main__":
-    # while True:
+    while True:
         transfer_to_clear()

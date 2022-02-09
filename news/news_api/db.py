@@ -1,11 +1,15 @@
 import psycopg
 from psycopg import Error
+import configparser
 
-db_name = "scrapy_fast"
-db_user = "postgres"
-db_password = "firmamento10"
+config = configparser.ConfigParser()
+config.read('../config.ini')
 
-con = f"dbname={db_name} user={db_user} password={db_password}"
+con = f"""
+      dbname={config['postgres']['postgres_name']}
+      user={config['postgres']['postgres_user']}
+      password={config['postgres']['postgres_password']}
+      """
 
 
 def create_pattern_table():

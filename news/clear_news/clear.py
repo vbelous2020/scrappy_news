@@ -2,13 +2,22 @@ import logging
 import pymongo
 import psycopg
 from psycopg import Error
-from config_clear import MONGODB_DB, MONGODB_COLLECTION, con
+import configparser
 
-mng_cl = pymongo.MongoClient('127.0.0.1')
-db = mng_cl[f'{MONGODB_DB}']
-source_collection = db[f'{MONGODB_COLLECTION}']
+config = configparser.ConfigParser()
+config.read('../config.ini')
 
-logging.basicConfig(filename='log/clear_work_log.log',
+mng_cl = pymongo.MongoClient(config["mongo"]["db_server"])
+db = mng_cl[f'{config["mongo"]["db_name"]}']
+source_collection = db[f'{config["mongo"]["pattern_collection"]}']
+con = f"""
+      dbname={config['postgres']['postgres_name']}
+      user={config['postgres']['postgres_user']}
+      password={config['postgres']['postgres_password']}
+      """
+
+
+logging.basicConfig(filename='../log/clear_work_log.log',
                     filemode='a',
                     format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
                     datefmt='%H:%M:%S',
