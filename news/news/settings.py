@@ -66,9 +66,6 @@ ROBOTSTXT_OBEY = True
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-# ITEM_PIPELINES = {
-#    'news.pipelines.NewsPipeline': 300,
-# }
 
 ITEM_PIPELINES = {
     'news.pipelines.MongoDBPipeline': 300,
