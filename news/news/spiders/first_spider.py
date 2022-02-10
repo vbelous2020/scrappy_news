@@ -14,9 +14,9 @@ logging.basicConfig(filename='../log/new_articles.log',
 
 class UnianSpider(scrapy.Spider):
     name = 'unian'
-    urls = db.get_list_of_urls()
+
     def start_requests(self):
-        urls = ['https://www.youtube.com']
+        urls = db.get_list_of_urls()
         for url in urls:
             yield scrapy.Request(url=url, callback=self.parse)
 
