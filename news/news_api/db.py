@@ -1,5 +1,8 @@
 import psycopg
 from psycopg import Error
+import newspaper
+from pymongo import MongoClient
+import logging
 import configparser
 
 config = configparser.ConfigParser()
@@ -10,6 +13,69 @@ con = f"""
       user={config['postgres']['postgres_user']}
       password={config['postgres']['postgres_password']}
       """
+
+client = MongoClient(config["mongo"]["db_server"], 27017)
+db = client[config["mongo"]["db_name"]]
+urls_collection = db[config["mongo"]["urls_collection"]]
+
+logging.basicConfig(filename='../log/new_articles.log',
+                    filemode='a',
+                    format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
+                    datefmt='%H:%M:%S',
+                    level=logging.INFO)
+
+
+def rss_exist(site):
+    actual_site = newspaper.build(site, memoize_articles=False)
+    if actual_site.size() <= 0:
+        logging_info = f"We didn't detect rss on {site} "
+        logging.info(logging_info)
+        return False
+    else:
+        pass
+
+
+def get_new_articles():
+    list = url_list()
+    for site in list:
+        if rss_exist(site) is False:
+            pass
+        else:
+            actual_site = newspaper.build(site, memoize_articles=False)  # True
+            if actual_site.size() < 1:
+                logging_info = f"No new articles - good news!"
+                logging.info(logging_info)
+            else:
+                for article in actual_site.articles:
+                    url = article.url
+                    if url.find("photo.unian.ua/photo/") != -1 or \
+                            url.find("unian.ua/static/press/live") != -1 or \
+                            url.find("unian.ua/news/archive") != -1 or \
+                            url.find("unian.ua/multimedia/video") != -1 or \
+                            url.find("lenta.ua/novosti/") != -1:
+                        continue
+                    else:
+                        urls_collection.insert_one({"url": url})
+                logging_info = f"Add {actual_site.size()} at {actual_site.url}"
+                logging.info(logging_info)
+
+
+def get_list_of_urls():
+    urls = list()
+    objects = urls_collection.find()
+    for obj in objects:
+        urls.append(obj['url'])
+    return urls
+
+
+def delete_parsed_url(url):
+    try:
+        urls_collection.delete_one({"url": url})
+        logging_info = f"Url parsed and removed from ulr list: {url}."
+        logging.info(logging_info)
+    except (Exception, Error) as error:
+        logging_info = f"Error: {error}."
+        logging.info(logging_info)
 
 
 def create_pattern_table():

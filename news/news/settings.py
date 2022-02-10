@@ -72,7 +72,7 @@ ITEM_PIPELINES = {
 }
 
 MONGODB_SERVER = config["mongo"]["db_server"]
-MONGODB_PORT = config["mongo"]["db_port"]
+MONGODB_PORT = 27017
 MONGODB_DB = config["mongo"]["db_name"]
 MONGODB_COLLECTION = config["mongo"]["pattern_collection"]
 
