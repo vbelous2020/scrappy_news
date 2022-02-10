@@ -41,7 +41,7 @@ def get_new_articles():
         if rss_exist(site) is False:
             pass
         else:
-            actual_site = newspaper.build(site, memoize_articles=False)  # True
+            actual_site = newspaper.build(site, memoize_articles=True)  # True
             if actual_site.size() < 1:
                 logging_info = f"No new articles - good news!"
                 logging.info(logging_info)
